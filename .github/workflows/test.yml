@@ -1,0 +1,34 @@
+---
+name: Test
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      MONGO_URI: mongodb://admin:password@localhost/testdb?authSource=admin
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run mongodb
+        run: docker-compose -f docker-compose.test.yml up -d
+
+      - name: Install test data
+        run: node test/setup/setup.js
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Down mongodb
+        run: docker-compose -f docker-compose.test.yml down
